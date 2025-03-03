@@ -1,0 +1,10 @@
+# Snakemake temporary and log files
+.snakemake/
+*.log
+
+# Large files (modify as needed)
+raw-data/
+results/
+*.bam
+*.sif  # Singularity container files
+*.fastq.gz

@@ -1,0 +1,26 @@
+# Configuration file for Micro-C Snakemake workflow
+
+# Reference genome (pre-indexed)
+reference_genome: "/home/groups/hoolock2/u0/genomes/ucsc/hg38/indexes/bwa/hg38.fa.gz"
+
+# Genome file (generated from reference index)
+genome_file: "/home/groups/hoolock2/u0/genomes/ucsc/hg38/hg38.genome"
+
+# Chromosome sizes file
+chrsizes: "/home/groups/hoolock2/u0/genomes/ucsc/hg38/hg38.chrom.sizes"
+
+# Number of threads
+threads: 16
+
+# Temporary directory for processing large files
+temp_directory: "/path/to/temp_dir"
+
+
+
+######################OLD
+GENOME:
+# everything before ".1.bt2"
+    - "/home/groups/hoolock2/u0/genomes/other/nomLeu4/indexes/bowtie2/nomLeu4"
+
+ASMBLY:
+    - "nomLeu4"
