@@ -46,7 +46,18 @@ rule fastqc:
         "v1.5.0/bio/fastqc"
 
 
-
+rule multiqc:
+    input:
+        expand("results/fastqc/{read}.html", read=reads),
+    output:
+        "results/fastqc/multiqc.html",
+        directory("results/fastqc/multiqc_data"),
+    params:
+        extra="--verbose",  # Optional: extra parameters for multiqc.
+    log:
+        "results/logs/multiqc.log",
+    wrapper:
+        "v5.8.3/bio/multiqc"
 
 
 # Single-Step Pipeline: FASTQ → Aligned BAM → Filtered Pairs → Final BAM

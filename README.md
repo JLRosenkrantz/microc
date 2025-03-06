@@ -1,20 +1,272 @@
 # Micro-C Workflow
+
+This Snakemake workflow performs **quality control (QC) and processing of Micro-C sequencing data**, following analysis recommendations from [Dovetail Genomics Micro-C Analysis Guide](https://micro-c.readthedocs.io/en/latest/index.html)
+
+***
+## Requirements
+This workflow requires:
+-   **Snakemake** (for workflow automation)
+-   **Conda** (for environment management)
+
+***
+## Installation & Setup
+If you haven't already installed Conda and Snakemake:
+1.  **Install Conda**:\
+    Follow instructions at Miniconda installation.
+
+2.  **Install Snakemake**:
+```bash
+    conda install -c conda-forge -c bioconda snakemake
+```
+
+3.  **Activate the Snakemake environment** before running the workflow:
+```bash
+    conda activate snakemake
+```
+
+***
+## Input Data Requirements
+
+### 1. Raw Data
+- Copy raw sequencing files into the **`raw-data/`** directory.
+-   Only **`.fastq.gz`** files are accepted.
+-   If your files are not .gz compressed, use `gzip` tool to compress
+
+### 2. Sample Naming Convention
+- Files must be named using the following format: `Sample1_R1.fastq.gz`, `Sample1_R2.fastq.gz`
+-   `_R1` → Read 1 of paired-end sequencing
+-   `_R2` → Read 2 of paired-end sequencing\
+- **Incorrect names will cause the workflow to fail.**
+- **Manually rename files if needed** before running the workflow.
+
+***
+## Configuration Setup
+Before running the workflow, update the configuration file: `config/config.yml` and set the correct file paths. See example below:
+
+```
+reference_genome: "/home/groups/hoolock2/u0/genomes/ucsc/hg38/indexes/bwa/hg38.fa.gz"
+genome_file: "/home/groups/hoolock2/u0/genomes/ucsc/hg38/hg38.genome"
+chrsizes: "/home/groups/hoolock2/u0/genomes/ucsc/hg38/hg38.chrom.sizes"
+threads: 16
+```
+- **`reference_genome`** → Path to the BWA index file (`.fa.gz`). If this is the first time running for a specific genome, you **must generate index file** (see instructions below).
+- **`genome_file`** → Path to the **`.genome`** file. If this is the first time running for a specific genome, you **must generate genome file** (see instructions below).
+-   **`chrsizes`** → Path to the chromosome sizes (`.chrom.sizes`) file.
+-   **`threads`** → Number of threads to use for multi-threaded tasks.
+
+
+
+
+
+### Generate BWA index file
+Micro-C data is aligned using **Burrows-Wheeler Aligner (BWA)**.\
+Before running the workflow, create a **BWA index** for your reference genome.
+Run this command in the directory containing the `.fasta` genome sequence:
+```
+bwa index hg38.fasta
+```
+This generates the necessary BWA index files.
+
+
+### Generating a Genome File
+A genome file (`.genome`) is required for downstream analysis. If you don't have one, create it from the `.fai` index file:
+
+```
+cut -f1,2 hg38.fa.fai > hg38.genome
+```
+
+This file contains chromosome names and sizes in **tab-separated format**.
+
+***
+## Running the Workflow
+Once everything is set up, execute the Snakemake workflow:
+
+### 1. Dry-Run to Check for Issues
+Before running, test for missing files or errors:
+```
+snakemake --use-conda -np
+```
+
+### **2️⃣ Run the Workflow**
+
+Execute the full workflow with the desired number of CPU cores:
+`snakemake --use-conda --cores 8`
+
+
+### **3️⃣ Run with Cluster (SLURM)**
+
+If using an HPC with SLURM, submit a job:
+`snakemake --use-conda --cores 8 --cluster "sbatch --time=24:00:00 --mem=32G --cpus-per-task=8"`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**🔹 Running the Workflow**
+---------------------------
+
+Once everything is set up, execute the Snakemake workflow:
+
+### **1️⃣ Dry-Run to Check for Issues**
+
+Before running, test for missing files or errors:
+
+bash
+
+CopyEdit
+
+`snakemake --use-conda --cores 1 -n`
+
+### **2️⃣ Run the Workflow**
+
+Execute the full workflow with the desired number of CPU cores:
+
+bash
+
+CopyEdit
+
+`snakemake --use-conda --cores 8`
+
+### **3️⃣ Run with Cluster (SLURM)**
+
+If using an HPC with SLURM, submit a job:
+
+bash
+
+CopyEdit
+
+`snakemake --use-conda --cores 8 --cluster "sbatch --time=24:00:00 --mem=32G --cpus-per-task=8"`
+
+* * * * *
+
+**🔹 Preparing the Genome Index**
+---------------------------------
+
+### **1️⃣ BWA Indexing**
+
+Micro-C data is aligned using **Burrows-Wheeler Aligner (BWA)**.\
+Before running the workflow, create a **BWA index** for your reference genome.
+
+📌 **Run this command in the directory containing the `.fasta` genome sequence**:
+
+bash
+
+CopyEdit
+
+`bwa index hg38.fasta`
+
+This generates the necessary BWA index files.
+
+### **2️⃣ Generating a Genome File**
+
+A genome file (`.genome`) is required for downstream analysis. If you don't have one, create it from the `.fai` index file:
+
+bash
+
+CopyEdit
+
+`cut -f1,2 /home/groups/hoolock2/u0/genomes/ucsc/hg38/hg38.fa.fai > hg38.genome`
+
+This file contains chromosome names and sizes in **tab-separated format**.
+
+* * * * *
+
+**🔹 Troubleshooting**
+----------------------
+
+### 🔸 **Common Errors & Fixes**
+
+| **Issue** | **Solution** |
+| --- | --- |
+| `Workflow fails due to missing files` | Ensure all paths in `config.yml` are correctly set. |
+| `FASTQ file naming error` | Rename files to match the required format (`Sample_R1.fastq.gz`). |
+| `BWA index file missing` | Generate it using `bwa index hg38.fasta`. |
+| `Out of memory (SLURM jobs fail)` | Increase memory allocation in SLURM (`--mem=64G`). |
+
+* * * * *
+
+**🔹 Citation & Acknowledgments**
+---------------------------------
+
+This workflow is adapted from the **Dovetail Micro-C analysis recommendations** and integrates best practices from the **4DN project**.
+
+For additional details, refer to:\
+📄 **[Dovetail Micro-C Analysis Guide](https://micro-c.readthedocs.io/en/latest/index.html)**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Micro-C Workflow
 Snakemake workflow for QC and processing of Micro-C data. Following analysis recommendations from Dovetail (https://micro-c.readthedocs.io/en/latest/index.html)
 
-activate snakemake conda environment before beginning
+This workflow requires the use of conda environments and snakemake.
+If required download conda and install snakemake.
+activate snakemake conda environment before beginning. 
 
 raw files must be copied into raw-data directory
-only fastq.gz is acceptable
+only fastq.gz files are acceptable. Make sure files are .gz compressed.
+If not compress using gzip tool.
 
-the files MUST be named as follows sampleID_readX.fastq.gz
-for example Sample1_R1.fastq.gz, Sample1_R2.fastq.gz
+The sample names are automatically determined based off the fastq.gz file names.  
 
-snakemake --use-conda
+the files MUST be named as follows Sample1_R1.fastq.gz, Sample1_R2.fastq.gz
+It is important that the _R1 and _R2 suffix are used to define read 1 and read 2 of paired end reads. The workflow will fail if named differently.
+Manually rename if required.
+
+Before running the snakemake workflow update the config/config.yml file
+in this file update correct file paths for the following:
+reference_genome: "/home/groups/hoolock2/u0/genomes/ucsc/hg38/indexes/bwa/hg38.fa.gz" this should be the filepath and suffix of the bwa index. you may need to generate this file if this is the first time running for specific genome. See notes below on Genome Index.
+genome_file: this should be the path for .genome file - you may need to generate this file if this is the first time running for specific genome. See notes below on Pre-Alignment.
+chrsizes: path to .chrom.sizes file
+threads: number of threads to run during workflow
 
 
-reference in a fasta file format, e.g. hg38
 
-REFFASTA="/home/groups/hoolock2/u0/genomes/ucsc/hg38/hg38.fa"
+
+
+
+
+Genome Index
+In line with the 4DN project guidelines and from our own experience optimal alignment results are obtained with Burrows-Wheeler Aligner (bwa). Prior to alignment, generate a bwa index file for the chosen reference. Run this in directory containing .fasta genome sequence.
+example:
+bwa index hg38.fasta
 
 Pre-Alignment
 For downstream steps you will need a genome file, genome file is a tab delimited file with chromosome names and their respective sizes. If you don’t already have a genome file follow these steps: 
@@ -23,9 +275,8 @@ example:
 cut -f1,2 /home/groups/hoolock2/u0/genomes/ucsc/hg38/hg38.fa.fai > hg38.genome
 
 
-In line with the 4DN project guidelines and from our own experience optimal alignment results are obtained with Burrows-Wheeler Aligner (bwa). Prior to alignment, generate a bwa index file for the chosen reference. Run this in directory containing .fasta genome sequence.
-example:
-bwa index hg38.fasta
+snakemake --use-conda
+
 
 
 Alignment
